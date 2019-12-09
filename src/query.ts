@@ -1,10 +1,14 @@
 import { converters } from './converters';
+import { isRQLOperator, parse, RQLOperator } from './parser';
 
 export class RQLQuery {
   static isRQLQuery(item: unknown): item is RQLQuery {
     return item && item instanceof RQLQuery;
   }
 
+  /**
+   * URL encodes an RQL string
+   */
   static encodeString(str: string): string {
     str = encodeURIComponent(str);
     if (str.match(/[\(\)]/)) {
@@ -14,6 +18,12 @@ export class RQLQuery {
     return str;
   }
 
+  /**
+   *
+   *
+   * @param {any} val a value of any type
+   * @returns {string} a string representation of an RQL value
+   */
   static encodeValue(val: any): string {
     let encoded = false;
 
@@ -44,6 +54,11 @@ export class RQLQuery {
     return val;
   }
 
+  /**
+   *
+   * @param part part of an RQL query (RQLQuery, a value, or an array of values)
+   * @returns {string} returns a string representation of the RQLQuery
+   */
   static queryToString(part: unknown): string {
     if (Array.isArray(part)) {
       return `(${this.serializeArgs(part, ',')})`;
@@ -56,52 +71,76 @@ export class RQLQuery {
     return RQLQuery.encodeValue(part);
   }
 
+  /**
+   *
+   * @param args takes an array of RQLQuery or values
+   * @param delimiter
+   * @returns {string} a string representation of the array of RQLQuery or
+   *  values, delimited with the delimiter
+   */
   static serializeArgs(args: Array<RQLQuery | any>, delimiter: string): string {
     return args.map(arg => this.queryToString(arg)).join(delimiter);
   }
 
-  constructor(public name: string, public args: Array<RQLQuery | any> = []) {}
+  static parse(query: string): RQLQuery {
+    return RQLQuery.parseObject(parse(query));
+  }
+
+  static parseObject(obj: RQLOperator): RQLQuery {
+    const args: any[] = [];
+    obj.args.forEach(arg => {
+      args.push(RQLQuery.parseArg(arg));
+    });
+    return new RQLQuery(obj.name, args);
+  }
+
+  static parseArg(obj: any): any {
+    if (isRQLOperator(obj)) {
+      return RQLQuery.parseObject(obj);
+    } else {
+      return obj;
+    }
+  }
+
+  constructor(public name: string, public args: any[]) {}
+
+  equals(b: RQLQuery): boolean {
+    if (this.name !== b.name) return false;
+    if (this.args.length !== b.args.length) return false;
+    for (let i = 0; i < this.args.length; i++) {
+      if (RQLQuery.isRQLQuery(this.args[i])) {
+        if (!RQLQuery.isRQLQuery(b.args[i])) return false;
+        if (!this.args[i].equals(b.args[i])) return false;
+      } else {
+        if (this.args[i] !== b.args[i]) return false;
+      }
+    }
+    return true;
+  }
 
   toString() {
     return RQLQuery.queryToString(this);
   }
 
+  toPlainObject(): RQLOperator {
+    return {
+      name: this.name,
+      args: this.args.map((arg: any) => {
+        if (RQLQuery.isRQLQuery(arg)) {
+          return arg.toPlainObject();
+        } else {
+          return arg;
+        }
+      })
+    };
+  }
+
+  toJSON(): string {
+    return JSON.stringify(this.toPlainObject());
+  }
+
   push(term: RQLQuery | any) {
     this.args.push(term);
     return this;
-  }
-
-  walk(fn, options = {}) {
-    function walk(name, terms) {
-      terms = terms || [];
-
-      let i = 0,
-        l = terms.length,
-        term,
-        args,
-        func,
-        newTerm;
-
-      for (; i < l; i++) {
-        term = terms[i];
-        if (term == null) {
-          term = {};
-        }
-        func = term.name;
-        args = term.args;
-        if (!func || !args) {
-          continue;
-        }
-        if (args[0] instanceof RQLQuery) {
-          walk.call(this, func, args);
-        } else {
-          newTerm = fn.call(this, func, args);
-          if (newTerm && newTerm.name && newTerm.args) {
-            terms[i] = newTerm;
-          }
-        }
-      }
-    }
-    walk.call(this, this.name, this.args);
   }
 }

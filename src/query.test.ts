@@ -1,10 +1,50 @@
 import { RQLQuery } from './query';
 
-describe('Query', () => {
-  describe('toPlainObject()', () => {});
-  describe('toJSON()', () => {});
-  describe('parse()', () => {});
-  describe('walk()', () => {});
+describe('RQLQuery', () => {
+  describe('toPlainObject()', () => {
+    it('should convert an RQLQuery into a RQLOperator object', done => {
+      expect(new RQLQuery('eq', ['a', 'b']).toPlainObject()).toEqual({
+        name: 'eq',
+        args: ['a', 'b']
+      });
+      done();
+    });
+  });
+  describe('toJSON()', () => {
+    it('should convert an RQLQuery into a RQLOperator object', done => {
+      expect(new RQLQuery('eq', ['a', 'b']).toJSON()).toEqual('{"name":"eq","args":["a","b"]}');
+      done();
+    });
+  });
+  describe('equals()', () => {
+    it('should return true if two RQLQuery objects are equal', done => {
+      expect(new RQLQuery('eq', ['a', 'b']).equals(new RQLQuery('eq', ['a', 'b'])));
+      done();
+    });
+    it('should return false if two RQLQuery objects are not equal', done => {
+      expect(!new RQLQuery('eq', ['a', 'b']).equals(new RQLQuery('eq', ['b', 'a'])));
+      expect(!new RQLQuery('eq', ['a', 'b']).equals(new RQLQuery('ne', ['a', 'a'])));
+      expect(!new RQLQuery('eq', ['a', 'b']).equals(new RQLQuery('eq', ['a', 'b', 'c'])));
+      expect(!new RQLQuery('eq', [new RQLQuery('x', ['y']), 'b']).equals(new RQLQuery('eq', ['a', 'b'])));
+      expect(!new RQLQuery('eq', ['a', 'b']).equals(new RQLQuery('eq', [new RQLQuery('x', ['y']), 'a'])));
+      expect(
+        !new RQLQuery('eq', ['a', 'b', new RQLQuery('x', ['y'])]).equals(
+          new RQLQuery('eq', ['a', new RQLQuery('z', ['y'])])
+        )
+      );
+      done();
+    });
+  });
+  describe('parse()', () => {
+    it('should walk a query with sub-operators', done => {
+      expect(
+        RQLQuery.parse('eq(foo,gt(fizz,buzz),bar)').equals(
+          new RQLQuery('eq', ['foo', new RQLQuery('gt', ['fizz', 'buzz']), 'bar'])
+        )
+      );
+      done();
+    });
+  });
   describe('encodeString()', () => {
     it('should encode a string', done => {
       expect(RQLQuery.encodeString('foo')).toEqual('foo');
@@ -22,7 +62,7 @@ describe('Query', () => {
       expect(RQLQuery.encodeValue(/foo/i)).toEqual('re:foo');
       expect(RQLQuery.encodeValue(new Date('2019-11-20T12:00:00Z'))).toEqual('date:2019-11-20T12:00:00.000Z');
       expect(RQLQuery.encodeValue(null)).toEqual('null');
-
+      expect(RQLQuery.encodeValue('null')).toEqual('string:null');
       done();
     });
   });
@@ -39,6 +79,14 @@ describe('Query', () => {
       expect(RQLQuery.serializeArgs([1, 2, 3], ',')).toEqual('1,2,3');
       expect(RQLQuery.serializeArgs([1, 2, 3], '/')).toEqual('1/2/3');
 
+      done();
+    });
+  });
+  describe('push()', () => {
+    it('should add args to the object', done => {
+      const rqlQuery: RQLQuery = new RQLQuery('hi', ['h', 'e', 'l', 'l']);
+      rqlQuery.push('o');
+      expect(rqlQuery.args.join('')).toEqual('hello');
       done();
     });
   });

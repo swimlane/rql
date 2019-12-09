@@ -1,10 +1,13 @@
 import { converters } from './converters';
 import { RQLParseError } from './errors';
-import { RQLQuery } from './query';
 
 export interface RQLOperator {
   name: string;
   args: Array<RQLOperator | any>;
+}
+
+export function isRQLOperator(arg: any): arg is RQLOperator {
+  return arg && arg.name && typeof arg.args === 'object' && Array.isArray(arg.args);
 }
 
 export const operatorMap = {
@@ -17,7 +20,7 @@ export const operatorMap = {
   '>=': 'ge'
 };
 
-export function parse(query: string) {
+export function parse(query: string): RQLOperator {
   if (!query) {
     throw new RQLParseError(`Query empty or invalid: ${query}`);
   }
@@ -26,10 +29,8 @@ export function parse(query: string) {
     throw new RQLParseError(`Query must not start with ?: ${query}`);
   }
 
-  let returnQuery: RQLQuery;
   const normalizedQuery = normalizeSyntax(query);
-
-  return;
+  return walkQuery(normalizedQuery);
 }
 
 export function walkQuery(query: string): RQLOperator {
@@ -38,6 +39,7 @@ export function walkQuery(query: string): RQLOperator {
     args: []
   };
   let topOperator: RQLOperator = currentOperator;
+  let aggregateOperator: boolean = false;
 
   for (let index = 0; index < query.length; index++) {
     const char = query[index];
@@ -45,6 +47,7 @@ export function walkQuery(query: string): RQLOperator {
       case '&':
       case '|':
         // finish operator
+        aggregateOperator = true;
         topOperator = {
           name: char === '&' ? 'and' : 'or',
           args: []
@@ -58,9 +61,7 @@ export function walkQuery(query: string): RQLOperator {
       case '(':
         // grab insides
         const insides = inside(query.slice(index));
-        currentOperator.args = splitArguments(insides).map(arg => {
-          return isRqlQuery(arg) ? walkQuery(arg) : arg;
-        });
+        currentOperator.args = splitArguments(insides).map(parseArg);
 
         // jump index
         index += insides.length + 1; // include trailing paren
@@ -69,8 +70,24 @@ export function walkQuery(query: string): RQLOperator {
         currentOperator.name += char;
     }
   }
+  if (aggregateOperator) {
+    // push the last one
+    topOperator.args.push(currentOperator);
+  }
 
   return topOperator;
+}
+
+export function parseArg(arg: string | any[]): RQLOperator | any | any[] {
+  if (typeof arg === 'string') {
+    return isRQLQuery(arg) ? walkQuery(arg) : stringToValue(arg);
+  } else {
+    return arg.map(parseArg);
+  }
+}
+
+export function isRQLQuery(str: string) {
+  return str.match(/\w+\(/);
 }
 
 export function inside(str: string, delimiter = '\\'): string {
