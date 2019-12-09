@@ -46,10 +46,11 @@ export function walkQuery(query: string): RQLOperator {
     switch (char) {
       case '&':
       case '|':
+      case ',': // support implicit and
         // finish operator
         aggregateOperator = true;
         topOperator = {
-          name: char === '&' ? 'and' : 'or',
+          name: char === '|' ? 'or' : 'and',
           args: []
         };
         topOperator.args.push(currentOperator);

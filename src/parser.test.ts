@@ -8,6 +8,10 @@ describe('walkQuery()', () => {
   });
 
   it('should walk a query with multiple operators', done => {
+    expect(walkQuery('after(foo),limit(10)')).toEqual({
+      name: 'and',
+      args: [{ name: 'after', args: ['foo'] }, { name: 'limit', args: [10] }]
+    });
     expect(walkQuery('eq(foo,bar)&limit(10)')).toEqual({
       name: 'and',
       args: [{ name: 'eq', args: ['foo', 'bar'] }, { name: 'limit', args: [10] }]
