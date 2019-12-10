@@ -33,26 +33,57 @@ export function parse(query: string): RQLOperator {
   return walkQuery(normalizedQuery);
 }
 
-export function walkQuery(query: string): RQLOperator {
+export function walkQuery(query: string, index: number = 0, nestedTopOperator?: RQLOperator): RQLOperator {
   let currentOperator: RQLOperator = {
     name: '',
     args: []
   };
-  let topOperator: RQLOperator = currentOperator;
-  let aggregateOperator: boolean = false;
+  let topOperator: RQLOperator = nestedTopOperator || currentOperator;
+  let aggregateOperator: boolean = !!nestedTopOperator;
 
-  for (let index = 0; index < query.length; index++) {
+  for (index; index < query.length; index++) {
     const char = query[index];
     switch (char) {
       case '&':
-      case '|':
       case ',': // support implicit and
-        // finish operator
-        aggregateOperator = true;
-        topOperator = {
-          name: char === '|' ? 'or' : 'and',
+        if (aggregateOperator && topOperator.name === 'or') {
+          // we already have a top operator. nest.
+          const nestedOperator = {
+            name: 'and',
+            args: [currentOperator]
+          };
+          topOperator.args.push(walkQuery(query, index + 1, nestedOperator));
+          return topOperator;
+        } else if (!aggregateOperator) {
+          aggregateOperator = true;
+          topOperator = {
+            name: 'and',
+            args: []
+          };
+        }
+        topOperator.args.push(currentOperator);
+        currentOperator = {
+          name: '',
           args: []
         };
+        break;
+      case '|':
+        if (aggregateOperator && topOperator.name === 'and') {
+          // we already have a top operator. nest.
+          topOperator.args.push(currentOperator); // 'and' has OoO precedence over 'or'
+          const nestedOperator = {
+            name: 'or',
+            args: []
+          };
+          topOperator.args.push(walkQuery(query, index + 1, nestedOperator));
+          return topOperator;
+        } else if (!aggregateOperator) {
+          aggregateOperator = true;
+          topOperator = {
+            name: 'or',
+            args: []
+          };
+        }
         topOperator.args.push(currentOperator);
         currentOperator = {
           name: '',

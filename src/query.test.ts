@@ -90,4 +90,24 @@ describe('RQLQuery', () => {
       done();
     });
   });
+  describe('walk()', () => {
+    it('should call the function for each RQLQuery and replace it', done => {
+      const rqlQuery: RQLQuery = new RQLQuery('some-top-name', [
+        1,
+        new RQLQuery('some-name', ['h']),
+        new RQLQuery('some-other-name', ['i'])
+      ]);
+      const called: string[] = [];
+      rqlQuery.walk(
+        (nextRQLQuery: RQLQuery): RQLQuery => {
+          called.push(nextRQLQuery.name);
+          if (nextRQLQuery.name === 'some-name') return new RQLQuery('some-changed-name', nextRQLQuery.args);
+          else return nextRQLQuery;
+        }
+      );
+      expect(called).toEqual(['some-name', 'some-other-name']);
+      expect(rqlQuery.args[1].name).toEqual('some-changed-name');
+      done();
+    });
+  });
 });

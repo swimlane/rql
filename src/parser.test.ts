@@ -34,6 +34,117 @@ describe('walkQuery()', () => {
     });
     done();
   });
+
+  describe("when there's an OR then an AND inline", () => {
+    it('should have OR at the top with the AND operator nested and its args together', () => {
+      expect(walkQuery('eq(foo,bar)|eq(fizz,buzz)&limit(10)')).toEqual({
+        name: 'or',
+        args: [
+          { name: 'eq', args: ['foo', 'bar'] },
+          { name: 'and', args: [{ name: 'eq', args: ['fizz', 'buzz'] }, { name: 'limit', args: [10] }] }
+        ]
+      });
+    });
+  });
+
+  describe("when there's an OR then multiple ANDs inline", () => {
+    it('should have OR at the top, with the ANDs nested together', () => {
+      expect(walkQuery('eq(foo,bar)|eq(fizz,buzz)&limit(10)&gt(moo,1)')).toEqual({
+        name: 'or',
+        args: [
+          { name: 'eq', args: ['foo', 'bar'] },
+          {
+            name: 'and',
+            args: [
+              { name: 'eq', args: ['fizz', 'buzz'] },
+              { name: 'limit', args: [10] },
+              { name: 'gt', args: ['moo', 1] }
+            ]
+          }
+        ]
+      });
+      expect(walkQuery('eq(foo,bar)|eq(fizz,buzz)|eq(oof,rab)&limit(10)&gt(moo,1)&lt(boo,2)')).toEqual({
+        name: 'or',
+        args: [
+          { name: 'eq', args: ['foo', 'bar'] },
+          { name: 'eq', args: ['fizz', 'buzz'] },
+          {
+            name: 'and',
+            args: [
+              { name: 'eq', args: ['oof', 'rab'] },
+              { name: 'limit', args: [10] },
+              { name: 'gt', args: ['moo', 1] },
+              { name: 'lt', args: ['boo', 2] }
+            ]
+          }
+        ]
+      });
+    });
+  });
+
+  describe("when there's an AND then an OR inline", () => {
+    it('should have AND at the top with the operators together, with the OR nested', () => {
+      expect(walkQuery('eq(foo,bar)&eq(fizz,buzz)|limit(10)')).toEqual({
+        name: 'and',
+        args: [
+          { name: 'eq', args: ['foo', 'bar'] },
+          { name: 'eq', args: ['fizz', 'buzz'] },
+          { name: 'or', args: [{ name: 'limit', args: [10] }] }
+        ]
+      });
+    });
+  });
+
+  describe("when there's an AND then multiple ORs inline", () => {
+    it('should have AND at the top with the operators together, with the ORs nested together', () => {
+      expect(walkQuery('eq(foo,bar)&eq(fizz,buzz)|limit(10)|gt(moo,1)')).toEqual({
+        name: 'and',
+        args: [
+          { name: 'eq', args: ['foo', 'bar'] },
+          { name: 'eq', args: ['fizz', 'buzz'] },
+          { name: 'or', args: [{ name: 'limit', args: [10] }, { name: 'gt', args: ['moo', 1] }] }
+        ]
+      });
+      expect(walkQuery('eq(foo,bar)&eq(fizz,buzz)&eq(oof,rab)|limit(10)|gt(moo,1)|lt(boo,2)')).toEqual({
+        name: 'and',
+        args: [
+          { name: 'eq', args: ['foo', 'bar'] },
+          { name: 'eq', args: ['fizz', 'buzz'] },
+          { name: 'eq', args: ['oof', 'rab'] },
+          {
+            name: 'or',
+            args: [{ name: 'limit', args: [10] }, { name: 'gt', args: ['moo', 1] }, { name: 'lt', args: ['boo', 2] }]
+          }
+        ]
+      });
+    });
+  });
+
+  describe("when there's many nested ANDs and ORs", () => {
+    it('should give AND precedence and nest them correctly', () => {
+      expect(walkQuery('eq(foo,bar)&eq(fizz,buzz)|eq(oof,rab)|limit(10)&gt(moo,1)|lt(boo,2)')).toEqual({
+        name: 'and',
+        args: [
+          { name: 'eq', args: ['foo', 'bar'] },
+          { name: 'eq', args: ['fizz', 'buzz'] },
+          {
+            name: 'or',
+            args: [
+              { name: 'eq', args: ['oof', 'rab'] },
+              {
+                name: 'and',
+                args: [
+                  { name: 'limit', args: [10] },
+                  { name: 'gt', args: ['moo', 1] },
+                  { name: 'or', args: [{ name: 'lt', args: ['boo', 2] }] }
+                ]
+              }
+            ]
+          }
+        ]
+      });
+    });
+  });
 });
 
 describe('stringToValue()', () => {
