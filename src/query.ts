@@ -143,4 +143,21 @@ export class RQLQuery {
     this.args.push(term);
     return this;
   }
+
+  /**
+   * This will call the provided function with each RQLQuery in the args of this
+   * RQLQuery object, and each of RQLQuery objects in the args of that, and so on.
+   * The return value of the provided function is an RQLQuery which will be
+   * substituted for the passed in value in the tree.
+   *
+   * @param {Function} fn a function which takes an RQLQuery and returns a replacement RQLQuery
+   */
+  walk(fn: (rqlQuery: RQLQuery) => RQLQuery): void {
+    for (let i = 0; i < this.args.length; i++) {
+      if (RQLQuery.isRQLQuery(this.args[i])) {
+        this.args[i] = fn(this.args[i]);
+        this.args[i].walk(fn);
+      }
+    }
+  }
 }
