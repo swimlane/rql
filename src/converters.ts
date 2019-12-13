@@ -10,6 +10,12 @@ export const autoConverted = {
 };
 
 export const converters = {
+  /**
+   * Default converter - tries to infer if the type is a number, json, or string.
+   *
+   * @param str a string to parse a value from
+   * @returns the value parsed from the string
+   */
   auto(str: string) {
     if (autoConverted.hasOwnProperty(str)) {
       return autoConverted[str];
@@ -25,28 +31,57 @@ export const converters = {
       }
     }
   },
-  number(x: any): number {
+  /**
+   * Parse a number from a string
+   *
+   * @param x
+   * @returns
+   * @throws {RQLConversionError} when the string cannot be parsed
+   */
+  number(x: string): number {
     const num = Number(x);
     if (isNaN(num)) {
       throw new RQLConversionError('Invalid number ' + num);
     }
     return num;
   },
-  epoch(x: any): Date {
+  /**
+   * Parse a date from a string containing a number representing a UTC timestamp.
+   *
+   * @param x
+   * @returns
+   * @throws {RQLConversionError} when the string cannot be parsed
+   */
+  epoch(x: string): Date {
     const date = new Date(converters.number(x));
     if (isNaN(date.getTime())) {
       throw new RQLConversionError(`Invalid date ${x}`);
     }
     return date;
   },
-  isodate(x: any): Date {
+  /**
+   * Parse a date from a string in ISO date format
+   *
+   * @param x
+   * @returns
+   */
+  isodate(x: string): Date {
     // four-digit year
     let date = '0000'.substr(0, 4 - x.length) + x;
     // pattern for partial dates
     date += '0000-01-01T00:00:00Z'.substring(date.length);
     return converters.date(date);
   },
-  date(x: any): Date {
+  /**
+   * Parse a date from a string in YYYY-MM-DDTHH:mm:ss.SSSZ format
+   *
+   * Milliseconds and "Z" are optional.
+   *
+   * @param x
+   * @returns
+   * @throws {RQLConversionError} when the string cannot be parsed
+   */
+  date(x: string): Date {
     // tslint:disable-next-line: tsr-detect-unsafe-regexp
     const isoDate = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?Z$/.exec(x);
     let date;
@@ -62,12 +97,31 @@ export const converters = {
     }
     return date;
   },
-  boolean(x: any): boolean {
+  /**
+   * Parse a boolean from a string. The string must be 'true' (case insensitive), otherwise it is false.
+   *
+   * @param x
+   * @returns
+   */
+  boolean(x: string): boolean {
     return x.toLowerCase() === 'true';
   },
+  /**
+   * Decode a URL encoded string
+   *
+   * @param str
+   * @returns
+   */
   string(str: string): string {
     return decodeURIComponent(str);
   },
+  /**
+   * Parse a case-insensitive regular expression from a string.
+   *
+   * @param x
+   * @returns
+   * @throws {RQLConversionError} when the string cannot be parsed
+   */
   re(x: string): RegExp {
     try {
       // tslint:disable-next-line: tsr-detect-non-literal-regexp
@@ -76,6 +130,12 @@ export const converters = {
       throw new RQLConversionError(err.message);
     }
   },
+  /**
+   * Parse a case-sensitive regular expression from a string
+   *
+   * @param x
+   * @returns
+   */
   RE(x: string): RegExp {
     try {
       // tslint:disable-next-line: tsr-detect-non-literal-regexp
@@ -84,6 +144,13 @@ export const converters = {
       throw new RQLConversionError(err.message);
     }
   },
+  /**
+   * Parse JSON from a string
+   *
+   * @param x
+   * @returns
+   * @throws {RQLConversionError} when the string cannot be parsed
+   */
   json(x: string): any {
     try {
       return JSON.parse(x);

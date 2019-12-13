@@ -1,11 +1,24 @@
 import { converters } from './converters';
 import { RQLParseError } from './errors';
 
+/**
+ * An interface for RQL parsed into nested object form
+ *
+ * @export
+ * @interface RQLOperator
+ */
 export interface RQLOperator {
   name: string;
   args: Array<RQLOperator | any>;
 }
 
+/**
+ * User-Defined Type Guard for the RQLOperator interface
+ *
+ * @export
+ * @param arg an unknown value
+ * @returns the arg cast as RQLOperator
+ */
 export function isRQLOperator(arg: any): arg is RQLOperator {
   return arg && arg.name && typeof arg.args === 'object' && Array.isArray(arg.args);
 }
@@ -20,6 +33,15 @@ export const operatorMap = {
   '>=': 'ge'
 };
 
+/**
+ * The main function for parsing an RQL string into object form with typed values
+ *
+ * @export
+ * @param query the RQL string
+ * @returns the parsed RQL object
+ * @throws {RQLParseError} if the RQL string is invalid for any reason
+ * @throws {RQLConversionError} if a string argument can't be converted into a value
+ */
 export function parse(query: string): RQLOperator {
   if (!query) {
     throw new RQLParseError(`Query empty or invalid: ${query}`);
@@ -33,6 +55,16 @@ export function parse(query: string): RQLOperator {
   return walkQuery(normalizedQuery);
 }
 
+/**
+ * Steps through the RQL string character by character identifying operators
+ * and their arguments to build RQLOperator objects.
+ *
+ * @export
+ * @param query the RQL string
+ * @param [index=0] the current index where we are in the string
+ * @param [nestedTopOperator] the parent AND or OR operator under which we are parsing
+ * @returns the parsed RQL object
+ */
 export function walkQuery(query: string, index: number = 0, nestedTopOperator?: RQLOperator): RQLOperator {
   let currentOperator: RQLOperator = {
     name: '',
@@ -110,6 +142,15 @@ export function walkQuery(query: string, index: number = 0, nestedTopOperator?: 
   return topOperator;
 }
 
+/**
+ * Helper function for walkQuery -- recursively parse the arguments of a given
+ * operator: arguments may be another RQL operator, a value, or an array of values
+ *
+ * @export
+ * @param arg the RQL string argument of an RQL operator
+ * @returns the parsed argument: either an RQL operator, a parsed value of
+ *  whichever type, or an array of values
+ */
 export function parseArg(arg: string | any[]): RQLOperator | any | any[] {
   if (typeof arg === 'string') {
     return isRQLQuery(arg) ? walkQuery(arg) : stringToValue(arg);
@@ -118,10 +159,27 @@ export function parseArg(arg: string | any[]): RQLOperator | any | any[] {
   }
 }
 
-export function isRQLQuery(str: string) {
-  return str.match(/\w+\(/);
+/**
+ * Checks wehether argument to an RQL operator may itself be an RQL operator
+ *
+ * @export
+ * @param str the RQL string argument of an RQL operator
+ * @returns whether or not this is an RQL operator itself
+ */
+export function isRQLQuery(str: string): boolean {
+  return str.match(/\w+\(/) !== null;
 }
 
+/**
+ * Returns the string of arguments inside of an RQL operator.
+ *
+ * @export
+ * @param str the current portion of an RQL string being parsed, beginning with
+ *  the arguments inside of an RQL operator
+ * @param [delimiter='\\'] an escape character
+ * @returns the arguments of an RQL operator as a string
+ * @throws {RQLParseError} if a closing paren is missing
+ */
 export function inside(str: string, delimiter = '\\'): string {
   let insideStr = '';
 
@@ -172,9 +230,18 @@ export function inside(str: string, delimiter = '\\'): string {
     index++;
   }
 
-  throw new Error('Could not find closing paren');
+  throw new RQLParseError('Could not find closing paren');
 }
 
+/**
+ * Takes a string of all the arguments of an RQL operator and returns an array of
+ * strings of the arguments.
+ *
+ * @export
+ * @param str the string of arguments inside an RQL operator
+ * @param [delimiter='\\'] an escape character
+ * @returns the arguments as an array of strings or string arrays
+ */
 export function splitArguments(str: string, delimiter = '\\'): Array<string | any[]> {
   // waiting for recursive types in TS 3.7
   // type Nested<T> = T | Nested<T>;
@@ -247,6 +314,13 @@ export function splitArguments(str: string, delimiter = '\\'): Array<string | an
   return args;
 }
 
+/**
+ * Removes spaces and matching quotes ('' or "") from around a string
+ *
+ * @export
+ * @param str a string value with or without surrounding spaces or quotes
+ * @returns a trimmed string
+ */
 export function trim(str: string): string {
   const trimmed = str.trim();
 
@@ -257,6 +331,16 @@ export function trim(str: string): string {
   }
 }
 
+/**
+ * Converts a raw RQL string into a standardized format
+ *    - changes infix operators to prefix
+ *    - removes spaces from around infix operators
+ *
+ * @export
+ * @param query a raw RQL string
+ * @returns a normalized RQL string
+ * @throws {RQLParseError} in case there is an illegal operator
+ */
 export function normalizeSyntax(query: string): string {
   query = query
     .replace(/%3C=/g, '=le=')
@@ -284,7 +368,16 @@ export function normalizeSyntax(query: string): string {
   return query;
 }
 
-export function stringToValue(str: string, parameters?: unknown[]) {
+/**
+ * Parses an RQL string argument into its typed value using a converter
+ *
+ * @export
+ * @param str an argument of an RQL operator in string format
+ * @returns the typed value converted from the string
+ * @throws {RQLParseError} if an unknown converter is used
+ * @throws {RQLConversionError} if the string can't be converted using the converter
+ */
+export function stringToValue(str: string): any {
   let converter = converters['default'];
   if (/^\w+[^\\]:/.test(str)) {
     const parts = str.split(':', 2);
