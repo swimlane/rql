@@ -1,25 +1,20 @@
 {
   "name": "rql",
-  "version": "0.4.0",
+  "version": "1.0.0",
   "author": "Swimlane <dev@swimlane.com>",
-  "contributors": [
-    "Kris Zyp <kriszyp@gmail.com>",
-    "Vladimir Dronnikov <dronnikov@gmail.com>"
-  ],
   "keywords": [
     "resource",
     "query",
+    "language",
     "uri"
   ],
-  "description": "Query language for the web, NoSQL",
+  "description": "Resource Query Language (RQL) is a query language for web.",
   "licenses": [
     {
       "type": "AFLv2.1",
-      "url": "http://trac.dojotoolkit.org/browser/dojo/trunk/LICENSE#L43"
     },
     {
       "type": "BSD",
-      "url": "http://trac.dojotoolkit.org/browser/dojo/trunk/LICENSE#L13"
     }
   ],
   "repository": {
