@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/persvr/rql.svg?branch=master)](https://travis-ci.org/persvr/rql)
+[![Build Status](https://travis-ci.org/swimlane/rql.svg?branch=master)](https://travis-ci.org/swimlane/rql)
 
 Resource Query Language (RQL) is a query language designed for use in URIs with object
 style data structures. This project includes the RQL specification and
