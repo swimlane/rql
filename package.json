@@ -9,7 +9,6 @@
     "uri"
   ],
   "description": "Resource Query Language (RQL) is a query language for web.",
-  "license": "(AFLv2.1 OR BSD)",
   "repository": {
     "type": "git",
     "url": "http://github.com/swimlane/rql"
