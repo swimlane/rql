@@ -1,3 +1,5 @@
+# @swimlane/rql
+
 [![Build Status](https://travis-ci.org/swimlane/rql.svg?branch=master)](https://travis-ci.org/swimlane/rql)
 
 Resource Query Language (RQL) is a query language designed for use in URIs with object
@@ -172,7 +174,6 @@ RQL can be installed using any standard package manager, for example with NPM:
 
     npm install @swimlane/rql
 
-
 Licensing
 --------
 
@@ -181,8 +182,11 @@ This project licensed under the AFL or BSD license.
 Credits
 --------
 
-This RQL library was originally forked from the persvr/rql project, fixing a number issues including:
-	- 
+This RQL library was originally forked from the `persvr/rql` project, fixing a number issues including:
+
+- Date parsing
+- Converting RQL arrays to string format was broken
+- Added support for spaces, quotes, and delimiters
 
 This is a [Swimlane](http://swimlane.com) open-source project; we believe in giving back to the open-source community by sharing some of the projects we build for our application. Swimlane is an automated cyber security operations and incident response platform that enables cyber security teams to leverage threat intelligence, speed up incident response and automate security operations.
 
