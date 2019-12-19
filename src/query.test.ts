@@ -3,9 +3,14 @@ import { RQLQuery } from './query';
 describe('RQLQuery', () => {
   describe('toPlainObject()', () => {
     it('should convert an RQLQuery into a RQLOperator object', done => {
-      expect(new RQLQuery('eq', ['a', 'b']).toPlainObject()).toEqual({
-        name: 'eq',
-        args: ['a', 'b']
+      expect(new RQLQuery('and', [new RQLQuery('eq', ['a', 'b'])]).toPlainObject()).toEqual({
+        name: 'and',
+        args: [
+          {
+            name: 'eq',
+            args: ['a', 'b']
+          }
+        ]
       });
       done();
     });
@@ -30,6 +35,11 @@ describe('RQLQuery', () => {
       expect(
         !new RQLQuery('eq', ['a', 'b', new RQLQuery('x', ['y'])]).equals(
           new RQLQuery('eq', ['a', new RQLQuery('z', ['y'])])
+        )
+      );
+      expect(
+        !new RQLQuery('and', [new RQLQuery('eq', ['foo', 'bar']), new RQLQuery('eq', ['a', 'b'])]).equals(
+          new RQLQuery('and', [new RQLQuery('eq', ['a', 'b']), new RQLQuery('eq', ['a', 'b'])])
         )
       );
       done();
@@ -58,6 +68,8 @@ describe('RQLQuery', () => {
     it('should encode values', done => {
       expect(RQLQuery.encodeValue('foo')).toEqual('foo');
       expect(RQLQuery.encodeValue(5)).toEqual(5);
+      expect(RQLQuery.encodeValue('7')).toEqual('string:7');
+      expect(RQLQuery.encodeValue({ hi: 'there' })).toEqual('json:\'{"hi":"there"}\'');
       expect(RQLQuery.encodeValue(/foo/)).toEqual('RE:foo');
       expect(RQLQuery.encodeValue(/foo/i)).toEqual('re:foo');
       expect(RQLQuery.encodeValue(new Date('2019-11-20T12:00:00Z'))).toEqual('date:2019-11-20T12:00:00.000Z');
@@ -70,6 +82,14 @@ describe('RQLQuery', () => {
     it('should convert query part to a string', done => {
       expect(RQLQuery.queryToString('foo')).toEqual('foo');
       expect(RQLQuery.queryToString([1, 2, 3])).toEqual('(1,2,3)');
+      expect(RQLQuery.queryToString(new RQLQuery('eq', ['foo', 'bar']))).toEqual('eq(foo,bar)');
+
+      done();
+    });
+  });
+  describe('toString()', () => {
+    it('should convert an RQL query to a string', done => {
+      expect(new RQLQuery('eq', ['foo', 'bar']).toString()).toEqual('eq(foo,bar)');
 
       done();
     });

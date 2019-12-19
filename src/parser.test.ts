@@ -1,6 +1,30 @@
 import { RQLParseError } from './errors';
 import { inside, normalizeSyntax, parse, splitArguments, stringToValue, trim, walkQuery } from './parser';
 
+describe('parse()', () => {
+  it('should parse a valid query', done => {
+    expect(parse('eq(foo,bar)')).toEqual({ name: 'eq', args: ['foo', 'bar'] });
+    expect(parse('eq(foo,json:\'{"hi": "there"}\')')).toEqual({ name: 'eq', args: ['foo', { hi: 'there' }] });
+    done();
+  });
+  it('should parse a valid query with an array value', done => {
+    expect(parse('in(foo,(bar,foo,moo))')).toEqual({ name: 'in', args: ['foo', ['bar', 'foo', 'moo']] });
+    done();
+  });
+  it('should throw an error if the query is empty', done => {
+    expect(() => {
+      parse('');
+    }).toThrowError(RQLParseError);
+    done();
+  });
+  it('should throw an error if the query begins with ?', done => {
+    expect(() => {
+      parse('?eq(foo,3)');
+    }).toThrowError(RQLParseError);
+    done();
+  });
+});
+
 describe('walkQuery()', () => {
   it('should walk a query', done => {
     expect(walkQuery('eq(foo,bar)')).toEqual({ name: 'eq', args: ['foo', 'bar'] });
@@ -163,6 +187,7 @@ describe('stringToValue()', () => {
     expect(stringToValue('isodate:2019')).toEqual(new Date('2019-01-01T00:00:00Z'));
     expect(stringToValue('date:2019-04')).toEqual(new Date('2019-04-01T00:00:00Z'));
     expect(stringToValue('boolean:True')).toEqual(true);
+    expect(stringToValue('json:{"hi": "there"}')).toEqual({ hi: 'there' });
     done();
   });
 
@@ -212,7 +237,7 @@ describe('splitArguments()', () => {
     expect(splitArguments("foo,'fizz,buzz'")).toEqual(['foo', 'fizz,buzz']);
     expect(splitArguments('foo\\,bar')).toEqual(['foo,bar']);
     expect(splitArguments('"foo\\,bar"')).toEqual(['foo\\,bar']);
-
+    expect(splitArguments('foo,"fizz,\'buzz\'"')).toEqual(['foo', "fizz,'buzz'"]);
     done();
   });
 

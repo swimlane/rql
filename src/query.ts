@@ -64,6 +64,10 @@ export class RQLQuery {
       } else if (type === 'string') {
         val = RQLQuery.encodeString(val);
         encoded = true;
+      } else if (type === 'object') {
+        type = 'json';
+        val = "'" + JSON.stringify(val) + "'";
+        encoded = true;
       }
       val = `${type}:${val}`;
     }

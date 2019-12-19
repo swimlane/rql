@@ -29,8 +29,14 @@ describe('Converters', () => {
       done();
     });
 
-    it('should throw an error on an invalid date', done => {
+    it('should throw an error on an invalid date string', done => {
       expect(() => converters.epoch('foo')).toThrowError(RQLConversionError);
+
+      done();
+    });
+
+    it('should throw an error on an invalid date number', done => {
+      expect(() => converters.epoch('99999999999999999999')).toThrowError(RQLConversionError);
 
       done();
     });

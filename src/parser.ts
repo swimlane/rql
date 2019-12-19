@@ -20,7 +20,7 @@ export interface RQLOperator {
  * @returns the arg cast as RQLOperator
  */
 export function isRQLOperator(arg: any): arg is RQLOperator {
-  return arg && arg.name && typeof arg.args === 'object' && Array.isArray(arg.args);
+  return arg && arg.name && Array.isArray(arg.args);
 }
 
 export const operatorMap = {
@@ -380,12 +380,14 @@ export function normalizeSyntax(query: string): string {
 export function stringToValue(str: string): any {
   let converter = converters['default'];
   if (/^\w+[^\\]:/.test(str)) {
-    const parts = str.split(':', 2);
-    converter = converters[parts[0]];
+    const ind = str.indexOf(':');
+    const converterPart = str.substring(0, ind);
+    const valuePart = str.substring(ind + 1);
+    converter = converters[converterPart];
     if (!converter) {
-      throw new RQLParseError(`Unknown converter: "${parts[0]}`);
+      throw new RQLParseError(`Unknown converter: "${converterPart}`);
     }
-    str = parts[1];
+    str = valuePart;
   }
 
   // replace an colon delimiting
