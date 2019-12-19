@@ -122,7 +122,7 @@ export const converters = {
    * @returns
    * @throws {RQLConversionError} when the string cannot be parsed
    */
-  re(x: string): RegExp {
+  ire(x: string): RegExp {
     try {
       // tslint:disable-next-line: tsr-detect-non-literal-regexp
       return new RegExp(converters.string(x), 'i');
@@ -136,7 +136,7 @@ export const converters = {
    * @param x
    * @returns
    */
-  RE(x: string): RegExp {
+  re(x: string): RegExp {
     try {
       // tslint:disable-next-line: tsr-detect-non-literal-regexp
       return new RegExp(converters.string(x));

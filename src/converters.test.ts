@@ -94,30 +94,30 @@ describe('Converters', () => {
       done();
     });
   });
+  describe('ire', () => {
+    it('should create a case-insensitive regexp', done => {
+      expect(converters.ire('^foo$')).toEqual(new RegExp('^foo$', 'i'));
+      expect(converters.ire('foo%26bar')).toEqual(new RegExp('foo&bar', 'i'));
+
+      done();
+    });
+
+    it('should throw an error on invalid regexp', done => {
+      expect(() => converters.ire('notValid[')).toThrowError(RQLConversionError);
+
+      done();
+    });
+  });
   describe('re', () => {
     it('should create a case-insensitive regexp', done => {
-      expect(converters.re('^foo$')).toEqual(new RegExp('^foo$', 'i'));
-      expect(converters.re('foo%26bar')).toEqual(new RegExp('foo&bar', 'i'));
+      expect(converters.re('^foo$')).toEqual(new RegExp('^foo$'));
+      expect(converters.re('foo%26bar')).toEqual(new RegExp('foo&bar'));
 
       done();
     });
 
     it('should throw an error on invalid regexp', done => {
       expect(() => converters.re('notValid[')).toThrowError(RQLConversionError);
-
-      done();
-    });
-  });
-  describe('RE', () => {
-    it('should create a case-insensitive regexp', done => {
-      expect(converters.RE('^foo$')).toEqual(new RegExp('^foo$'));
-      expect(converters.RE('foo%26bar')).toEqual(new RegExp('foo&bar'));
-
-      done();
-    });
-
-    it('should throw an error on invalid regexp', done => {
-      expect(() => converters.RE('notValid[')).toThrowError(RQLConversionError);
 
       done();
     });

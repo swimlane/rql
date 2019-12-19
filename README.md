@@ -133,6 +133,29 @@ for more less operators):
 * one() - Returns the first and only record of the query's result set, or produces an error if the query's result set has more or less than one record in it.
 * count() - Returns the count of the number of records in the query's result set
 
+# Converters
+
+Prefix a value in your RQL string with a converter to explicitly identify its type.
+
+Example:
+```
+RQLQuery.parse('eq(dateField,date:2020-01-01T00:00:00')
+```
+
+Available converters:
+
+- number: Parse a number from a string.
+- epoch: Parse a date from a string containing a number representing a UTC timestamp.
+- isodate: Parse a date from a string in ISO date format.
+- date: Parse a date from a string in YYYY-MM-DDTHH:mm:ss.SSSZ format.
+- boolean: Parse a boolean from a string. The string must be 'true' (case insensitive), otherwise it is false.
+- string: Parse as a string regardless of string contents. Also will URL decode the string.
+- ire: Parse a case-insensitive regular expression from a string.
+- re: Parse a case-sensitive regular expression from a string.
+- json: Parse JSON from a string.
+
+By default if no converter is specified, the string value will be attempted to be parsed as a number or as json, otherwise it will be a string value.
+
 # JavaScript Modules
 
 ## rql/query

@@ -54,7 +54,7 @@ export class RQLQuery {
     if (val !== convertedValue) {
       let type: string = typeof val; // start with common types
       if (val instanceof RegExp) {
-        type = val.ignoreCase ? 're' : 'RE';
+        type = val.ignoreCase ? 'ire' : 're';
         val = RQLQuery.encodeString(val.source);
         encoded = true;
       } else if (val instanceof Date) {

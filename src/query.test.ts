@@ -70,8 +70,8 @@ describe('RQLQuery', () => {
       expect(RQLQuery.encodeValue(5)).toEqual(5);
       expect(RQLQuery.encodeValue('7')).toEqual('string:7');
       expect(RQLQuery.encodeValue({ hi: 'there' })).toEqual('json:\'{"hi":"there"}\'');
-      expect(RQLQuery.encodeValue(/foo/)).toEqual('RE:foo');
-      expect(RQLQuery.encodeValue(/foo/i)).toEqual('re:foo');
+      expect(RQLQuery.encodeValue(/foo/)).toEqual('re:foo');
+      expect(RQLQuery.encodeValue(/foo/i)).toEqual('ire:foo');
       expect(RQLQuery.encodeValue(new Date('2019-11-20T12:00:00Z'))).toEqual('date:2019-11-20T12:00:00.000Z');
       expect(RQLQuery.encodeValue(null)).toEqual('null');
       expect(RQLQuery.encodeValue('null')).toEqual('string:null');

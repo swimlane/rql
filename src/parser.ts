@@ -381,7 +381,7 @@ export function stringToValue(str: string): any {
   let converter = converters['default'];
   if (/^\w+[^\\]:/.test(str)) {
     const ind = str.indexOf(':');
-    const converterPart = str.substring(0, ind);
+    const converterPart = str.substring(0, ind).toLowerCase();
     const valuePart = str.substring(ind + 1);
     converter = converters[converterPart];
     if (!converter) {
