@@ -29,7 +29,7 @@ Such that this can be used in URIs like:
 Using the JavaScript library we can construct queries
 
     import { RQLQuery } from '@swimlane/rql';
-	const rqlQuery = RQLQuery.parse(foo,3);
+	const rqlQuery = RQLQuery.parse('eq(foo,3)');
 
 # RQL Rules
 

@@ -107,7 +107,7 @@ export const converters = {
     return x.toLowerCase() === 'true';
   },
   /**
-   * Decode a URL encoded string
+   * Parse as a string regardless of string contents. Also will URL decode the stirng.
    *
    * @param str
    * @returns
