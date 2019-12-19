@@ -283,7 +283,8 @@ export function splitArguments(str: string, delimiter = '\\'): Array<string | an
         index += arr.length + 1;
 
         // we need to jump to the next argument
-        const toNextArg = /( *,)| *$/.exec(str.slice(index));
+        const checker = str.slice(index);
+        const toNextArg = /( *,)| *$/.exec(checker);
         if (toNextArg) {
           index += toNextArg[0].length;
         }
@@ -353,14 +354,10 @@ export function normalizeSyntax(query: string): string {
     /(\([\+\*\$\-:\w%\._,]+\)|[\+\*\$\-: \w%\._]*|)([<>!]?=(?:[\w]*=)?|>|<)(\([\+\*\$\-:\w%\._,]+\)|[\+\*\$\-:\w %\._]*|)/g,
     // <---------       property        -----------><------  operator -----><----------------   value ------------------>
     function(t, property, operator, value) {
-      if (operator.length < 3) {
-        if (!operatorMap[operator]) {
-          throw new RQLParseError(`Illegal operator: "${operator}"`);
-        }
-        operator = operatorMap[operator];
-      } else {
-        operator = operator.substring(1, operator.length - 1);
+      if (!operatorMap[operator]) {
+        throw new RQLParseError(`Illegal operator: "${operator}"`);
       }
+      operator = operatorMap[operator];
       return `${operator}(${property},${value})`;
     }
   );

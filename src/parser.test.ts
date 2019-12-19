@@ -238,6 +238,7 @@ describe('splitArguments()', () => {
     expect(splitArguments('foo\\,bar')).toEqual(['foo,bar']);
     expect(splitArguments('"foo\\,bar"')).toEqual(['foo\\,bar']);
     expect(splitArguments('foo,"fizz,\'buzz\'"')).toEqual(['foo', "fizz,'buzz'"]);
+    expect(splitArguments('(foo,bar) ,baz')).toEqual([['foo', 'bar'], 'baz']);
     done();
   });
 
@@ -276,6 +277,9 @@ describe('trim()', () => {
 
 describe('normalizeSyntax()', () => {
   it('should convert query to a standard syntax', done => {
+    expect(() => {
+      normalizeSyntax('foo>==bar');
+    }).toThrowError(RQLParseError);
     expect(normalizeSyntax('foo=bar')).toEqual('eq(foo,bar)');
     expect(normalizeSyntax('foo = bar')).toEqual('eq(foo , bar)');
     expect(normalizeSyntax('foo>bar')).toEqual('gt(foo,bar)');
