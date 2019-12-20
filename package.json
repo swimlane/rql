@@ -16,6 +16,8 @@
   "files": [
     "dist/"
   ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "dependencies": {},
   "devDependencies": {
     "@swimlane/prettier-config-swimlane": "^2.0.0",
