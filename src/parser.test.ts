@@ -34,19 +34,31 @@ describe('walkQuery()', () => {
   it('should walk a query with multiple operators', done => {
     expect(walkQuery('after(foo),limit(10)')).toEqual({
       name: 'and',
-      args: [{ name: 'after', args: ['foo'] }, { name: 'limit', args: [10] }]
+      args: [
+        { name: 'after', args: ['foo'] },
+        { name: 'limit', args: [10] }
+      ]
     });
     expect(walkQuery('eq(foo,bar)&limit(10)')).toEqual({
       name: 'and',
-      args: [{ name: 'eq', args: ['foo', 'bar'] }, { name: 'limit', args: [10] }]
+      args: [
+        { name: 'eq', args: ['foo', 'bar'] },
+        { name: 'limit', args: [10] }
+      ]
     });
     expect(walkQuery('eq(foo,bar)|eq(fizz,buzz)')).toEqual({
       name: 'or',
-      args: [{ name: 'eq', args: ['foo', 'bar'] }, { name: 'eq', args: ['fizz', 'buzz'] }]
+      args: [
+        { name: 'eq', args: ['foo', 'bar'] },
+        { name: 'eq', args: ['fizz', 'buzz'] }
+      ]
     });
     expect(walkQuery('eq(foo,bar)|eq(fizz,buzz)')).toEqual({
       name: 'or',
-      args: [{ name: 'eq', args: ['foo', 'bar'] }, { name: 'eq', args: ['fizz', 'buzz'] }]
+      args: [
+        { name: 'eq', args: ['foo', 'bar'] },
+        { name: 'eq', args: ['fizz', 'buzz'] }
+      ]
     });
     done();
   });
@@ -65,7 +77,13 @@ describe('walkQuery()', () => {
         name: 'or',
         args: [
           { name: 'eq', args: ['foo', 'bar'] },
-          { name: 'and', args: [{ name: 'eq', args: ['fizz', 'buzz'] }, { name: 'limit', args: [10] }] }
+          {
+            name: 'and',
+            args: [
+              { name: 'eq', args: ['fizz', 'buzz'] },
+              { name: 'limit', args: [10] }
+            ]
+          }
         ]
       });
     });
@@ -126,7 +144,13 @@ describe('walkQuery()', () => {
         args: [
           { name: 'eq', args: ['foo', 'bar'] },
           { name: 'eq', args: ['fizz', 'buzz'] },
-          { name: 'or', args: [{ name: 'limit', args: [10] }, { name: 'gt', args: ['moo', 1] }] }
+          {
+            name: 'or',
+            args: [
+              { name: 'limit', args: [10] },
+              { name: 'gt', args: ['moo', 1] }
+            ]
+          }
         ]
       });
       expect(walkQuery('eq(foo,bar)&eq(fizz,buzz)&eq(oof,rab)|limit(10)|gt(moo,1)|lt(boo,2)')).toEqual({
@@ -137,7 +161,11 @@ describe('walkQuery()', () => {
           { name: 'eq', args: ['oof', 'rab'] },
           {
             name: 'or',
-            args: [{ name: 'limit', args: [10] }, { name: 'gt', args: ['moo', 1] }, { name: 'lt', args: ['boo', 2] }]
+            args: [
+              { name: 'limit', args: [10] },
+              { name: 'gt', args: ['moo', 1] },
+              { name: 'lt', args: ['boo', 2] }
+            ]
           }
         ]
       });
