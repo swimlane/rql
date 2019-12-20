@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/persvr/rql.svg?branch=master)](https://travis-ci.org/persvr/rql)
+# @swimlane/rql
+
+[![Build Status](https://travis-ci.org/swimlane/rql.svg?branch=master)](https://travis-ci.org/swimlane/rql)
 
 Resource Query Language (RQL) is a query language designed for use in URIs with object
 style data structures. This project includes the RQL specification and
@@ -25,10 +27,9 @@ Such that this can be used in URIs like:
 # JavaScript Library
 
 Using the JavaScript library we can construct queries
-using chained operator calls in JavaScript. We could execute the query above like this:
 
-    var Query = require("rql/query").Query;
-    var fooEq3Query = new Query().eq("foo",3);
+    import { RQLQuery } from '@swimlane/rql';
+	const rqlQuery = RQLQuery.parse('eq(foo,3)');
 
 # RQL Rules
 
@@ -54,10 +55,6 @@ Is the same as:
 Which is also the same as:
 
     and(eq(foo,3),lt(price,10))
-
-We can execute a query against a JavaScript array:
-
-	require("rql/js-array").executeQuery("foo=3&price=lt=10", {}, data)...
 
 The | operator can be used to indicate an "or" operation. We can also use paranthesis
 to group expressions. For example:
@@ -136,28 +133,40 @@ for more less operators):
 * one() - Returns the first and only record of the query's result set, or produces an error if the query's result set has more or less than one record in it.
 * count() - Returns the count of the number of records in the query's result set
 
+# Converters
+
+Prefix a value in your RQL string with a converter to explicitly identify its type.
+
+Example:
+```
+RQLQuery.parse('eq(dateField,date:2020-01-01T00:00:00')
+```
+
+Available converters:
+
+- number: Parse a number from a string.
+- epoch: Parse a date from a string containing a number representing a UTC timestamp.
+- isodate: Parse a date from a string in ISO date format.
+- date: Parse a date from a string in YYYY-MM-DDTHH:mm:ss.SSSZ format.
+- boolean: Parse a boolean from a string. The string must be 'true' (case insensitive), otherwise it is false.
+- string: Parse as a string regardless of string contents. Also will URL decode the string.
+- ire: Parse a case-insensitive regular expression from a string.
+- re: Parse a case-sensitive regular expression from a string.
+- json: Parse JSON from a string.
+
+By default if no converter is specified, the string value will be attempted to be parsed as a number or as json, otherwise it will be a string value.
+
 # JavaScript Modules
 
 ## rql/query
 
-    var newQuery = require("rql/query").Query();
+    import { RQLQuery } from '@swimlane/rql';
 
-This module allows us to construct queries. With the query object, we could execute
-RQL operators as methods against the query object. For example:
-
-    var Query = require("rql/query").Query;
-    var fooBetween3And10Query = new Query().lt("foo",3).gt("foo",10);
-
-## rql/parser
-
-	var parsedQueryObject = require("rql/parser").parseQuery(rqlString);
-
-If you are writing an implementation of RQL for a database or other storage endpoint, or want to introspect queries, you can use the parsed query data
-structures. You can parse string queries with parser module's parseQuery function.
+This module allows us to construct queries.
 Query objects have a "name" property and an "args" with an array of the arguments.
 For example:
 
-	require("rql/parser").parseQuery("(foo=3|foo=bar)&price=lt=10") ->
+	RQLQuery.parse("(foo=3|foo=bar)&price=lt=10") ->
 	{
 		name: "and",
 		args: [
@@ -186,37 +195,22 @@ Installation
 
 RQL can be installed using any standard package manager, for example with NPM:
 
-    npm install rql
-
-or CPM:
-
-    cpm install rql
-
-or RingoJS:
-
-    ringo-admin install persvr/rql
-
+    npm install @swimlane/rql
 
 Licensing
 --------
 
-The RQL implementation is part of the Persevere project, and therefore is licensed under the
-AFL or BSD license. The Persevere project is administered under the Dojo foundation,
-and all contributions require a Dojo CLA.
+This project licensed under the AFL or BSD license.
 
-Project Links
-------------
+Credits
+--------
 
-See the main Persevere project for more information:
+This RQL library was originally forked from the `persvr/rql` project, fixing a number issues including:
 
-### Homepage:
+- Date parsing
+- Converting RQL arrays to string format was broken
+- Added support for spaces, quotes, and delimiters
 
-* [http://persvr.org/](http://persvr.org/)
+This is a [Swimlane](http://swimlane.com) open-source project; we believe in giving back to the open-source community by sharing some of the projects we build for our application. Swimlane is an automated cyber security operations and incident response platform that enables cyber security teams to leverage threat intelligence, speed up incident response and automate security operations.
 
-### Mailing list:
-
-* [http://groups.google.com/group/json-query](http://groups.google.com/group/json-query)
-
-### IRC:
-
-* [\#persevere on irc.freenode.net](http://webchat.freenode.net/?channels=persevere)
+[SecOps Hub](http://secopshub.com) is an open, product-agnostic, online community for security professionals to share ideas, use cases, best practices, and incident response strategies.

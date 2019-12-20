@@ -1,54 +1,47 @@
 {
   "name": "rql",
-  "version": "0.3.3",
-  "author": "Kris Zyp",
-  "contributors": [
-    "Vladimir Dronnikov <dronnikov@gmail.com>"
-  ],
+  "version": "1.0.0",
+  "author": "Swimlane <dev@swimlane.com>",
   "keywords": [
     "resource",
     "query",
+    "language",
     "uri"
   ],
-  "description": "Query language for the web, NoSQL",
-  "licenses": [
-    {
-      "type": "AFLv2.1",
-      "url": "http://trac.dojotoolkit.org/browser/dojo/trunk/LICENSE#L43"
-    },
-    {
-      "type": "BSD",
-      "url": "http://trac.dojotoolkit.org/browser/dojo/trunk/LICENSE#L13"
-    }
-  ],
-  "directories": {
-    "lib": "."
-  },
+  "description": "Resource Query Language (RQL) is a query language for web.",
   "repository": {
     "type": "git",
-    "url": "http://github.com/kriszyp/rql"
+    "url": "http://github.com/swimlane/rql"
   },
-  "maintainers": [
-    {
-      "name": "Kris Zyp",
-      "email": "kriszyp@gmail.com"
-    }
+  "files": [
+    "dist/"
   ],
-  "mappings": {
-    "patr": "http://github.com/kriszyp/patr/zipball/v0.2.1",
-    "promised-io": "http://github.com/kriszyp/promised-io/zipball/v0.2.1"
-  },
-  "dependencies": {
-    "promised-io": ">=0.3.0"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "intern-geezer": "^2.1.1"
+    "@swimlane/prettier-config-swimlane": "^2.0.0",
+    "@types/jest": "^24.0.22",
+    "jest": "^24.9.0",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^1.16.4",
+    "rimraf": "^3.0.0",
+    "ts-jest": "^24.1.0",
+    "tslint": "^5.20.1",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-config-security": "^1.16.0",
+    "tslint-config-swimlane": "^4.0.0",
+    "typescript": "^3.7.2"
   },
   "scripts": {
-    "test": "intern-client config=test/intern",
-    "test.sauce": "intern-runner config=test/intern",
-    "test.proxy": "intern-runner config=test/intern --proxyOnly"
-  },
-  "icon": "http://packages.dojofoundation.org/images/persvr.png",
-  "dojoBuild": "package.js"
+    "build": "npm run build:clean && npm run build:ts",
+    "build:clean": "rimraf dist/*",
+    "build:ts": "tsc -p tsconfig.build.json",
+    "lint:fix": "npm run lint -- --fix",
+    "lint": "tslint \"./src/**/*.ts\"",
+    "prettier:test": "prettier -c \"./src/**/*.{js,ts,html,scss,css,md,json}\"",
+    "prettier": "prettier --write \"./src/**/*.{js,ts,html,scss,css,md,json}\"",
+    "test:style": "npm run prettier:test && npm run lint",
+    "test:ts": "tsc --noemit",
+    "test": "npm run test:ts && npm run test:style && npm run test:unit",
+    "test:unit": "jest"
+  }
 }

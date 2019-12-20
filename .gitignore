@@ -1,3 +1,9 @@
 downloaded-modules
 node_modules
 npm-debug.log
+dist/
+coverage/
+docs/
+tsdoc.json
+.DS_Store
+.vscode/settings.json
